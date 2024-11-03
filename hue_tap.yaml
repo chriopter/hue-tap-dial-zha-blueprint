@@ -1,8 +1,7 @@
 blueprint:
   name: Philips Tap Dial Switch
   description: 'Control lights with a Philips Hue Tap Switch.
-    Use the four buttons to control up to four light(s) with an on/off toggle. The dial can be used to dim the most recently used light.
-    '
+    Use the four buttons to control up to four light(s) with an on/off toggle. The dial can be used to dim the most recently used light.'
   domain: automation
   input:
     remote:
@@ -41,14 +40,13 @@ blueprint:
           entity: {}
     current_light:
       name: (OPTIONAL) Current Light
-      description:
-        'Text helper to track the current light to dim. Set for the dimmer controls to change which light they are controlling according to the last one turned on.'
+      description: 'Text helper to track the current light to dim. Set for the dimmer controls to change which light they are controlling according to the last one turned on.'
       default:
       selector:
         entity:
           domain: input_text
     dim_scale:
-      name: Diming Scale
+      name: Dimming Scale
       description: Scale factor for the dimming. This value will be multiplied by the value given from the dial. So lower number, more gradual dimming. Larger number, faster dimming.
       default: 1.0
       selector:
@@ -56,7 +54,7 @@ blueprint:
           min: 0.0
           max: 5.0
           step: 0.01
-  source_url: https://github.com/chriopter/hue-tap-dial-zha-blueprint/blob/main/hue_tap.yaml
+  source_url: https://github.com/apollo1220/blueprints/blob/main/philips_zigbee_dial.yaml
 mode: restart
 max_exceeded: silent
 variables:
@@ -149,7 +147,9 @@ action:
           - "{{ step_mode == 'StepMode.Up' }}"
         sequence:
           - choose:
-              - conditions: "{{ current_light != none }}"
+              - conditions:
+                  - "{{ current_light != none }}"
+                  - "{{ is_state(lights[states(current_light)], 'on') }}"
                 sequence:
                   - service: light.turn_on
                     target: "{{ lights[states(current_light)] }}"
@@ -157,17 +157,22 @@ action:
                       brightness_step_pct: "{{ step_size * dim_scale }}"
                       transition: 1
             default:
-              - service: light.turn_on
-                target: !input "first_light"
-                data:
-                  brightness_step_pct: "{{ step_size * dim_scale }}"
-                  transition: 1
+              - conditions:
+                  - "{{ is_state(first_light, 'on') }}"
+                sequence:
+                  - service: light.turn_on
+                    target: !input "first_light"
+                    data:
+                      brightness_step_pct: "{{ step_size * dim_scale }}"
+                      transition: 1
       - conditions:
           - "{{ command == 'step_with_on_off' }}"
           - "{{ step_mode == 'StepMode.Down' }}"
         sequence:
           - choose:
-              - conditions: "{{ current_light != none }}"
+              - conditions:
+                  - "{{ current_light != none }}"
+                  - "{{ is_state(lights[states(current_light)], 'on') }}"
                 sequence:
                   - service: light.turn_on
                     target: "{{ lights[states(current_light)] }}"
@@ -175,8 +180,11 @@ action:
                       brightness_step_pct: "{{ -step_size * dim_scale }}"
                       transition: 1
             default:
-              - service: light.turn_on
-                target: !input "first_light"
-                data:
-                  brightness_step_pct: "{{ -step_size * dim_scale }}"
-                  transition: 1
+              - conditions:
+                  - "{{ is_state(first_light, 'on') }}"
+                sequence:
+                  - service: light.turn_on
+                    target: !input "first_light"
+                    data:
+                      brightness_step_pct: "{{ -step_size * dim_scale }}"
+                      transition: 1
