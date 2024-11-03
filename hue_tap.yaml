@@ -56,11 +56,6 @@ variables:
   third_light: !input "third_light"
   forth_light: !input "forth_light"
   dim_scale: !input "dim_scale"
-  lights:
-    first_light: !input "first_light"
-    second_light: !input "second_light"
-    third_light: !input "third_light"
-    forth_light: !input "forth_light"
 trigger:
   - platform: event
     event_type: zha_event
@@ -128,43 +123,4 @@ action:
                     data:
                       brightness_step_pct: "{{ step_size * dim_scale }}"
                       transition: 1
-              - conditions: "{{ is_state(forth_light, 'on') }}"
-                sequence:
-                  - service: light.turn_on
-                    target: !input "forth_light"
-                    data:
-                      brightness_step_pct: "{{ step_size * dim_scale }}"
-                      transition: 1
-      - conditions:
-          - "{{ command == 'step_with_on_off' }}"
-          - "{{ step_mode == 'StepMode.Down' }}"
-        sequence:
-          - choose:
-              - conditions: "{{ is_state(first_light, 'on') }}"
-                sequence:
-                  - service: light.turn_on
-                    target: !input "first_light"
-                    data:
-                      brightness_step_pct: "{{ -step_size * dim_scale }}"
-                      transition: 1
-              - conditions: "{{ is_state(second_light, 'on') }}"
-                sequence:
-                  - service: light.turn_on
-                    target: !input "second_light"
-                    data:
-                      brightness_step_pct: "{{ -step_size * dim_scale }}"
-                      transition: 1
-              - conditions: "{{ is_state(third_light, 'on') }}"
-                sequence:
-                  - service: light.turn_on
-                    target: !input "third_light"
-                    data:
-                      brightness_step_pct: "{{ -step_size * dim_scale }}"
-                      transition: 1
-              - conditions: "{{ is_state(forth_light, 'on') }}"
-                sequence:
-                  - service: light.turn_on
-                    target: !input "forth_light"
-                    data:
-                      brightness_step_pct: "{{ -step_size * dim_scale }}"
-                      transition: 1
+              - conditions: "{{ is_state(forth_light
